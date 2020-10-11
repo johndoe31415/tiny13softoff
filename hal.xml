@@ -1,0 +1,48 @@
+<?xml version="1.0" ?>
+<HAL>
+	<templates>
+		<template name="digio">
+			<pin type="io" initialstate="input" initialpullup="active" />
+		</template>
+
+		<template name="diginput">
+			<pin type="input" initialpullup="inactive" />
+		</template>
+
+		<template name="digswitchinput">
+			<pin type="input" initialpullup="active" />
+			<activelow />
+		</template>
+
+		<template name="digoutput">
+			<pin type="output" initialvalue="inactive" />
+		</template>
+
+		<template name="adcinput">
+			<pin type="input" initialpullup="inactive" />
+		</template>
+	</templates>
+
+	<portpin name="PB3" template="diginput">
+		<description value="EXT_IN" />
+	</portpin>
+
+	<portpin name="PB0" template="diginput">
+		<description value="AUX_IN" />
+	</portpin>
+
+	<portpin name="PB4" template="digoutput">
+		<description value="TURN_OFF" />
+	</portpin>
+
+
+	<!--
+	<portpin name="PB2" template="digswitchinput">
+		<description value="Unused1" />
+	</portpin>
+	<portpin name="PB1" template="digswitchinput">
+		<description value="Unused2" />
+	</portpin>
+	-->
+
+</HAL>
