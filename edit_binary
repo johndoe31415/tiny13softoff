@@ -12,6 +12,7 @@ from FriendlyArgumentParser import FriendlyArgumentParser
 parser = FriendlyArgumentParser(description = "Edit the parameters of the binary.")
 parser.add_argument("-b", "--binary", metavar = "name", default = "main.bin", help = "Name of the binary to edit. Defaults to %(default)s.")
 parser.add_argument("-v", "--verbose", action = "count", default = 0, help = "Increases verbosity. Can be specified multiple times to increase.")
+parser.add_argument("write", metavar = "json_config", nargs = "?", help = "Do not just show the binary contents, but read the given JSON file and inject it into the binary.")
 args = parser.parse_args(sys.argv[1:])
 
 class ExtFunction(enum.IntEnum):
@@ -46,14 +47,44 @@ class BinaryEditor():
 		return collections.OrderedDict([
 			("shutoff_after_secs", self._config.shutoff_after_secs),
 			("ext_pin", collections.OrderedDict([
-				("function", self._config.ext_function),
+				("function", ExtFunction(self._config.ext_function).name),
 				("pullup", bool(self._config.ext_in_pullup)),
 				("active_low", bool(self._config.ext_in_activelow)),
 			])),
+			("aux_pin", collections.OrderedDict([
+				("function", AuxFunction(self._config.aux_function).name),
+				("pullup", bool(self._config.aux_in_pullup)),
+				("active_low", bool(self._config.aux_in_activelow)),
+				("deadtime_ticks", self._config.aux_deadtime_ticks),
+			])),
 		])
+
+	def _inject_written_data(self):
+		with open(self._args.write) as f:
+			new_config = json.load(f)
+
+		fields_dict = {
+			"shutoff_after_secs":		new_config["shutoff_after_secs"],
+			"ext_function":				getattr(ExtFunction, new_config["ext_pin"]["function"]).value,
+			"ext_in_pullup":			int(new_config["ext_pin"]["pullup"]),
+			"ext_in_activelow":			int(new_config["ext_pin"]["active_low"]),
+			"aux_function":				getattr(AuxFunction, new_config["aux_pin"]["function"]).value,
+			"aux_in_pullup":			int(new_config["aux_pin"]["pullup"]),
+			"aux_in_activelow":			int(new_config["aux_pin"]["active_low"]),
+			"aux_deadtime_ticks":		new_config["aux_pin"]["deadtime_ticks"],
+		}
+		self._config = self._CONFIG_FIELDS(**fields_dict)
+		config_data = self._CONFIG_STRUCT.pack(*self._config)
+
+		new_binary = self._binary[ : self._conf_offset] + config_data + self._binary[self._conf_offset + len(config_data) : ]
+		with open(self._args.binary, "wb") as f:
+			f.write(new_binary)
 
 	def run(self):
 		self._load_file()
+		if self._args.write is not None:
+			self._inject_written_data()
+
 		jsondata = self._config_to_json()
 		print(json.dumps(jsondata, indent = 4))
 

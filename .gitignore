@@ -3,3 +3,5 @@
 main
 main.bin
 main.hex
+__pycache__
+conf.json
