@@ -1,7 +1,7 @@
 /* Automatically generated HAL from hal.xml */
 /* NEVER EDIT MANUALLY */
 
-/* Generated on: 2020-10-11 00:39:22 */
+/* Generated on: 2020-10-11 12:29:14 */
 
 #ifndef __HAL_H__
 #define __HAL_H__
@@ -61,10 +61,54 @@
 #define TURN_OFF_IsActive()                      (TURN_OFF_Get() != 0)
 #define TURN_OFF_Init()                          { TURN_OFF_SetInactive(); TURN_OFF_ModeOutput(); }
 
+/* Unused1 -> PB2 (Output, Initially Inactive) */
+#define Unused1_BIT                              2
+#define Unused1_PIN                              PINB
+#define Unused1_PORT                             PORTB
+#define Unused1_DDR                              DDRB
+#define Unused1_ModeOutput()                     Unused1_DDR |= _BV(Unused1_BIT)
+#define Unused1_IsOutput()                       ((Unused1_DDR & _BV(Unused1_BIT)) != 0)
+#define Unused1_SetHIGH()                        Unused1_PORT |= _BV(Unused1_BIT)
+#define Unused1_SetLOW()                         Unused1_PORT &= ~_BV(Unused1_BIT)
+#define Unused1_Get()                            (Unused1_PIN & _BV(Unused1_BIT))
+#define Unused1_SetInactive()                    Unused1_SetLOW()
+#define Unused1_SetActive()                      Unused1_SetHIGH()
+#define Unused1_Toggle()                         Unused1_PORT ^= _BV(Unused1_BIT)
+#define Unused1_SetConditional(condition)        if (condition) Unused1_SetActive(); else Unused1_SetInactive()
+#define Unused1_SetConditionalToggle(conditionon, conditionoff, conditiontoggle) if (conditionon) { Unused1_SetActive(); } else if (conditionoff) { Unused1_SetInactive(); } else if (conditiontoggle) { Unused1_Toggle(); }
+#define Unused1_Pulse()                          { Unused1_SetActive(); Unused1_SetInactive(); }
+#define Unused1_PulseNop()                       { Unused1_SetActive(); nop(); Unused1_SetInactive(); }
+#define Unused1_IsInactive()                     (Unused1_Get() == 0)
+#define Unused1_IsActive()                       (Unused1_Get() != 0)
+#define Unused1_Init()                           { Unused1_SetInactive(); Unused1_ModeOutput(); }
+
+/* Unused2 -> PB1 (Output, Initially Inactive) */
+#define Unused2_BIT                              1
+#define Unused2_PIN                              PINB
+#define Unused2_PORT                             PORTB
+#define Unused2_DDR                              DDRB
+#define Unused2_ModeOutput()                     Unused2_DDR |= _BV(Unused2_BIT)
+#define Unused2_IsOutput()                       ((Unused2_DDR & _BV(Unused2_BIT)) != 0)
+#define Unused2_SetHIGH()                        Unused2_PORT |= _BV(Unused2_BIT)
+#define Unused2_SetLOW()                         Unused2_PORT &= ~_BV(Unused2_BIT)
+#define Unused2_Get()                            (Unused2_PIN & _BV(Unused2_BIT))
+#define Unused2_SetInactive()                    Unused2_SetLOW()
+#define Unused2_SetActive()                      Unused2_SetHIGH()
+#define Unused2_Toggle()                         Unused2_PORT ^= _BV(Unused2_BIT)
+#define Unused2_SetConditional(condition)        if (condition) Unused2_SetActive(); else Unused2_SetInactive()
+#define Unused2_SetConditionalToggle(conditionon, conditionoff, conditiontoggle) if (conditionon) { Unused2_SetActive(); } else if (conditionoff) { Unused2_SetInactive(); } else if (conditiontoggle) { Unused2_Toggle(); }
+#define Unused2_Pulse()                          { Unused2_SetActive(); Unused2_SetInactive(); }
+#define Unused2_PulseNop()                       { Unused2_SetActive(); nop(); Unused2_SetInactive(); }
+#define Unused2_IsInactive()                     (Unused2_Get() == 0)
+#define Unused2_IsActive()                       (Unused2_Get() != 0)
+#define Unused2_Init()                           { Unused2_SetInactive(); Unused2_ModeOutput(); }
+
 #define initHAL() {\
 		EXT_IN_Init();\
 		AUX_IN_Init();\
 		TURN_OFF_Init();\
+		Unused1_Init();\
+		Unused2_Init();\
 }
 
 #endif

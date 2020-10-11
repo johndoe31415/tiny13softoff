@@ -3,10 +3,60 @@
 #
 
 import sys
+import struct
+import collections
+import json
+import enum
 from FriendlyArgumentParser import FriendlyArgumentParser
 
 parser = FriendlyArgumentParser(description = "Edit the parameters of the binary.")
+parser.add_argument("-b", "--binary", metavar = "name", default = "main.bin", help = "Name of the binary to edit. Defaults to %(default)s.")
 parser.add_argument("-v", "--verbose", action = "count", default = 0, help = "Increases verbosity. Can be specified multiple times to increase.")
 args = parser.parse_args(sys.argv[1:])
 
+class ExtFunction(enum.IntEnum):
+	Disabled = 0
+	LevelResetTimer = 1
+	EdgeResetTimer = 2
 
+class AuxFunction(enum.IntEnum):
+	Disabled = 0
+	LevelInstantShutoff = 1
+	EdgeInstantShutoff = 2
+
+class BinaryEditor():
+	_CONFIG_STRUCT = struct.Struct("< L   H B B   H B B   B")
+	_CONFIG_FIELDS = collections.namedtuple("ConfigFields", [ "shutoff_after_secs", "ext_function", "ext_in_pullup", "ext_in_activelow", "aux_function", "aux_in_pullup", "aux_in_activelow", "aux_deadtime_ticks" ])
+
+	def __init__(self, args):
+		self._args = args
+
+	def _load_file(self):
+		with open(self._args.binary, "rb") as f:
+			self._binary = f.read()
+		self._conf_offset = self._binary.find(bytes.fromhex("17 2f 9b fc"))
+		if self._conf_offset == -1:
+			raise Exception("Could not find magic sequence in binary.")
+		self._conf_offset += 4
+		config_data = self._binary[self._conf_offset : self._conf_offset + self._CONFIG_STRUCT.size]
+		config_values = self._CONFIG_STRUCT.unpack(config_data)
+		self._config = self._CONFIG_FIELDS(*config_values)
+
+	def _config_to_json(self):
+		return collections.OrderedDict([
+			("shutoff_after_secs", self._config.shutoff_after_secs),
+			("ext_pin", collections.OrderedDict([
+				("function", self._config.ext_function),
+				("pullup", bool(self._config.ext_in_pullup)),
+				("active_low", bool(self._config.ext_in_activelow)),
+			])),
+		])
+
+	def run(self):
+		self._load_file()
+		jsondata = self._config_to_json()
+		print(json.dumps(jsondata, indent = 4))
+
+
+bed = BinaryEditor(args)
+bed.run()

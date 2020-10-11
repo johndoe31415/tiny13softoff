@@ -82,10 +82,10 @@ static void do_shutoff(void) {
 
 	/* Hang device in low power, disable interrupts and enter deep sleep */
 	TCCR0B = 0;		 /* Disable timer/counter entirely */
+	cli();
+	set_sleep_mode(SLEEP_MODE_PWR_DOWN);
 	while (true) {
-		cli();
-		set_sleep_mode(SLEEP_MODE_PWR_DOWN);
-		sleep_cpu();
+		sleep_mode();
 	}
 }
 
@@ -116,7 +116,7 @@ ISR(PCINT0_vect) {
 
 ISR(TIM0_OVF_vect) {
 	runtime.ticks++;
-	if (runtime.ticks >= 63) {
+	if (runtime.ticks >= 2) {
 		runtime.ticks = 0;
 		second_tick();
 	}
@@ -128,12 +128,31 @@ ISR(TIM0_OVF_vect) {
 int main(void) {
 	initHAL();
 
-	if (config.ext_in_pullup) {
+
+	/* PB1 and PB2 are entirely unused: AIN1 and ADC1
+	 * PB4 is an output: ADC2
+	 * RESET pin is ADC0
+	 */
+	DIDR0 |= _BV(ADC0D) | _BV(ADC1D) | _BV(ADC2D) | _BV(AIN1D);
+
+	/* External pin is PB3 aka ADC3 */
+	if (config.ext_function == EXT_DISABLED) {
+		DIDR0 |= _BV(ADC3D);
 		EXT_IN_SetPullupActive();
+	} else {
+		if (config.ext_in_pullup) {
+			EXT_IN_SetPullupActive();
+		}
 	}
 
-	if (config.aux_in_pullup) {
+	/* Aux pin is PB0 aka AIN0 */
+	if (config.aux_function == AUX_DISABLED) {
+		DIDR0 |= _BV(AIN0D);
 		AUX_IN_SetPullupActive();
+	} else {
+		if (config.aux_in_pullup) {
+			AUX_IN_SetPullupActive();
+		}
 	}
 
 	if ((config.ext_function == EXT_EDGE_RESET_TIMER) || (config.aux_function == AUX_EDGE_INSTANT_SHUTOFF)) {
@@ -151,13 +170,19 @@ int main(void) {
 
 	runtime.aux_deadtime = config.aux_deadtime_ticks;
 
-	TCCR0B = _BV(CS00);		/* No prescaling, overflow every 16ms (62.5 Hz) at 16 kHz core clock */
+	TCCR0B = _BV(CS00);		/* No prescaling, overflow every 512ms (~ 2 Hz) at 500 Hz core clock */
 	TIMSK0 = _BV(TOIE0);
+
+	/* Prepare for IDLE mode later on */
+	set_sleep_mode(SLEEP_MODE_IDLE);
+
+	/* Drop clock rate from 16 kHz core to 500 Hz */
+	CLKPR = _BV(CLKPCE);
+	CLKPR = _BV(CLKPS3);
 	sei();
 
 	while (true) {
-		set_sleep_mode(SLEEP_MODE_IDLE);
-		sleep_cpu();
+		sleep_mode();
 	}
 
 	return 0;

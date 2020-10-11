@@ -36,13 +36,11 @@
 	</portpin>
 
 
-	<!--
-	<portpin name="PB2" template="digswitchinput">
+	<portpin name="PB2" template="digoutput">
 		<description value="Unused1" />
 	</portpin>
-	<portpin name="PB1" template="digswitchinput">
+	<portpin name="PB1" template="digoutput">
 		<description value="Unused2" />
 	</portpin>
-	-->
 
 </HAL>
