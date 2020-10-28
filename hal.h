@@ -1,7 +1,7 @@
 /* Automatically generated HAL from hal.xml */
 /* NEVER EDIT MANUALLY */
 
-/* Generated on: 2020-10-11 12:29:14 */
+/* Generated on: 2020-10-11 15:15:02 */
 
 #ifndef __HAL_H__
 #define __HAL_H__

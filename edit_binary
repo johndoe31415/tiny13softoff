@@ -26,7 +26,7 @@ class AuxFunction(enum.IntEnum):
 	EdgeInstantShutoff = 2
 
 class BinaryEditor():
-	_CONFIG_STRUCT = struct.Struct("< L   H B B   H B B   B")
+	_CONFIG_STRUCT = struct.Struct("< L   H B B   H B B B")
 	_CONFIG_FIELDS = collections.namedtuple("ConfigFields", [ "shutoff_after_secs", "ext_function", "ext_in_pullup", "ext_in_activelow", "aux_function", "aux_in_pullup", "aux_in_activelow", "aux_deadtime_ticks" ])
 
 	def __init__(self, args):
